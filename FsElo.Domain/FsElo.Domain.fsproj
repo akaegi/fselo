@@ -3,9 +3,16 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="SwissTableTennisBoard.fs" />
-    <Compile Include="PlayerRegistration.fs" />
-    <Compile Include="Scoreboard.fs" />
     <Compile Include="Library.fs" />
+    <Compile Include="Scoreboard\Events.fs" />
+    <Compile Include="Scoreboard\PlayerRegistration.fs" />
+    <Compile Include="Scoreboard\ScoreList.fs" />
+    <Compile Include="Scoreboard\ScoreValidation.fs" />
+    <Compile Include="Scoreboard\Scoreboard.fs" />
+    <Compile Include="ScoresQuery.fs" />
+    <Compile Include="ScoreboardInputParser.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FParsec" Version="1.1.1" />
   </ItemGroup>
 </Project>

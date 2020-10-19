@@ -1,0 +1,2 @@
+﻿module FsElo.Domain.ScoresQuery
+

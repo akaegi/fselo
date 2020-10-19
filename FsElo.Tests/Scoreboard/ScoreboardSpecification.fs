@@ -1,14 +1,15 @@
 module FsElo.Tests.ScoreboardSpecification
 
 open Xunit
-open FsElo.Domain.Scoreboard
+open FsElo.Domain.Scoreboard.Events
+open FsElo.Domain.Scoreboard.Scoreboard
 
 
 // A generic fold function that can be used on any aggregate
 let inline fold events =
-    let initial = (^S: (static member Initial: ^S) ()) 
-    let evolve s = (^S: (static member Evolve: ^S -> (^E -> ^S)) s)
-    List.fold evolve initial events
+//    let initial = (^S: (static member InitialState: ^S) ()) 
+//    let evolve s = (^S: (static member Evolve: ^S -> (^E -> ^S)) s)
+    List.fold State.Evolve State.Initial events
 
 
 let given (initialEvents: Event list) = initialEvents

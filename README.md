@@ -2,13 +2,16 @@
 
 ### Commands (on Scoreboard aggregate)
 
-openScoreboard boardId
-    requires `boardId` to be alphanumeric [0-9a-Z_]+
+openScoreboard boardId boardType
+    requires boardId to be alphanumeric of the form [0-9a-zA-Z][0-9a-zA-Z-_]{2,}
     requires board to not yet exist
+    requires boardType to be 'tt'
+    => ScoreboardOpened
 
 
 closeScoreboard boardId
     requires board to be open
+    => ScoreboardClosed
 
 
 registerPlayer boardId playerName
@@ -17,29 +20,31 @@ registerPlayer boardId playerName
     => PlayerRegistered (with playerId)
 
 
-enterScore boardId flags player1 player2 result [date]
+enterScore boardId flags player1 player2 result date
     requires board to be open
-    requires player1 and player2 to exist in board
-    requires (isTableTennisScore result)
-    requires no score between player1 and player2 within the last hour* (unless flags.allowDuplicateEntry)
-    * should prevent most unintentional "duplicate" score entries
+    requires player1 and player2 to be registered already
+    [tt] requires (isTableTennisScore result)
+    [tt] requires no score between player1 and player2 within the last hour* (unless flags.allowDuplicateEntry)
+    [tt] score must be of the form `n:m` where n > 0, m > 0
     => ScoreEntered (with scoreId)
+    * should prevent most unintentional "duplicate" score entries
 
 
 withdrawScore boardId scoreId
-    ScoreWithdrawn
+    => ScoreWithdrawn
 
-fixScore boardId scoreId result [date]
+
+fixScore boardId scoreId result date
     requires board to be open
-    requires scoreId to refer to the last score between two players
     => ScoreFixed
 
 
 ### Queries
 
-ranking boardId
-    aliases: leaderboard, scoreboard
+tt-elo boardId
+    aliases: tt-board, tt-leaderboard, tt-scoreboard
     requires board to exist
+    requires board to be of type 'tt'
 
     ----------------------------------------------------
     | Rk | Player               | Elo  | +/- last week | 
@@ -60,13 +65,16 @@ scores boardId player [otherPlayer]
     * if otherPlayer given, filter scores against otherPlayer only
 
     ----------------------------------------------------
-    | Date              | Player               | Score |
+    | Scores for `player`                              |
+    ----------------------------------------------------
+    | Date              | Other player         | Score |
     ----------------------------------------------------
     | 2019-10-22 10:12  | leonard.authier      | 1:2   |
     ----------------------------------------------------
     
 
 statistic boardId player
+    ???
 
 
 ### User Frontend
@@ -79,4 +87,3 @@ https://xtermjs.org/
 ## Extension Ideas
 
 - renamePlayer boardId oldName newName
-
