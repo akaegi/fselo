@@ -1,7 +1,10 @@
 module Program
 
 open System
+open System.Globalization
 open FsElo.Domain.ScoreboardInputParser
+
+let parse = parseScoreboardCommand CultureInfo.CurrentCulture (TimeSpan.FromHours(2.))
 
 let rec nextInput () =
     Console.WriteLine("Enter scoreboard input:")

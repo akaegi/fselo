@@ -36,5 +36,5 @@ let ``can register player with a valid name`` () =
     |> ``when`` (RegisterPlayer { Name = "Fritz" })
     |> thenMatches (fun events ->
         match events with
-        | [PlayerRegistered r] -> not (r.Id = Guid.Empty) && r.Name = (PlayerName "Fritz")
+        | [PlayerRegistered r] -> not (r.PlayerId = Guid.Empty) && r.Name = (PlayerName "Fritz")
         | _ -> false)

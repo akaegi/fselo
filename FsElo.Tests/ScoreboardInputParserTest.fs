@@ -1,5 +1,7 @@
 ﻿module FsElo.Tests.ScoreboardInputParserTest
 
+open System
+open System.Globalization
 open FsElo.Domain.Scoreboard.Events
 open FsElo.Domain.Scoreboard.Scoreboard
 open FsElo.Domain.ScoreboardInputParser
@@ -8,11 +10,12 @@ open Xunit.Sdk
 
 let input (inp: string) = inp
 
-let parsesTo (boardId: string) (pred: Command -> bool) (input: string) =
+let parse = parseScoreboardCommand CultureInfo.CurrentCulture (TimeSpan.FromHours(2.))
+
+let parsesTo (pred: Command -> bool) (input: string) =
     match parse input with
-    | Ok parseResult ->
-        boardId = parseResult.BoardId |> Assert.True
-        pred parseResult.Command |> Assert.True
+    | Ok cmd ->
+        pred cmd |> Assert.True
     | Error e -> raise (XunitException e)
     
 let failsToParse (input: string) =
@@ -24,7 +27,7 @@ let failsToParse (input: string) =
 [<Fact>]
 let ``open scoreboard`` () =
     input "open scoreboard tt b1"
-    |> parsesTo "b1" (fun cmd ->
+    |> parsesTo (fun cmd ->
         match cmd with
         | OpenScoreboard o -> o.BoardId = "b1" && o.Type = TableTennis
         | _ -> false)
@@ -37,7 +40,7 @@ let ``open scoreboard with missing board id`` () =
 [<Fact>]
 let ``register player `` () =
     input "register player b1 p1"
-    |> parsesTo "b1" (fun cmd ->
+    |> parsesTo (fun cmd ->
         match cmd with
         | RegisterPlayer r -> r.Name = "p1"
         | _ -> false)
@@ -45,7 +48,7 @@ let ``register player `` () =
 [<Fact>]
 let ``register player with board flag`` () =
     input "register player p1 --board b1"
-    |> parsesTo "b1" (fun cmd ->
+    |> parsesTo (fun cmd ->
         match cmd with
         | RegisterPlayer r -> r.Name = "p1"
         | _ -> false)

@@ -8,7 +8,19 @@ namespace TestApp
 {
     class Program
     {
-        static async Task Main(string[] args)
+        static void Main(string[] args)
+        {
+            var dt = DateTimeOffset.Parse("2020.10.21 17:17 +02:00");
+            
+            var tz = TimeZoneInfo.Local;
+
+            var offset = TimeSpan.FromHours(3);
+            
+            var dt2 = dt.ToOffset(offset);
+            Console.WriteLine(dt2);
+        }
+        
+        static async Task Main2(string[] args)
         {
             Console.WriteLine("Hello World!");
             

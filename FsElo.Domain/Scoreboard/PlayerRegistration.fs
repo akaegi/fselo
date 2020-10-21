@@ -23,5 +23,5 @@ module PlayerRegistry =
     let update (name: PlayerName) (playerId: PlayerId) (reg: PlayerRegistry) =
         reg.Add (name, playerId) 
 
-    let lookup (name: PlayerName) (reg: PlayerRegistry) =
-        reg.TryFind name
+    let lookup (name: string) (reg: PlayerRegistry) =
+        reg.TryFind (PlayerName name)

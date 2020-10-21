@@ -2,25 +2,27 @@
 
 ### Commands (on Scoreboard aggregate)
 
-openScoreboard boardId boardType
+open scoreboard boardId boardType
     requires boardId to be alphanumeric of the form [0-9a-zA-Z][0-9a-zA-Z-_]{2,}
     requires board to not yet exist
     requires boardType to be 'tt'
     => ScoreboardOpened
 
 
-closeScoreboard boardId
+close scoreboard boardId
     requires board to be open
     => ScoreboardClosed
 
 
-registerPlayer boardId playerName
+[given board]
+register player playerName
     requires playerName to be unique in board 
     requires playerName to have length >= 3 chars
     => PlayerRegistered (with playerId)
 
 
-enterScore boardId flags player1 player2 result date
+[given board]
+enter score boardId flags player1 player2 result date
     requires board to be open
     requires player1 and player2 to be registered already
     [tt] requires (isTableTennisScore result)
@@ -30,13 +32,16 @@ enterScore boardId flags player1 player2 result date
     * should prevent most unintentional "duplicate" score entries
 
 
-withdrawScore boardId scoreId
+[given board]
+withdraw score boardId scoreId
     => ScoreWithdrawn
 
 
-fixScore boardId scoreId result date
+[given board]
+fix score boardId scoreId result date
     requires board to be open
     => ScoreFixed
+
 
 
 ### Queries

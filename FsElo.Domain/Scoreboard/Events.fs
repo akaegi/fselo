@@ -30,12 +30,14 @@ and ScoreboardClosed = {
 }
 
 and PlayerRegistered = {
-      Id: PlayerId
+      BoardId: BoardId
+      PlayerId: PlayerId
       Name: PlayerName
       Date: System.DateTimeOffset
 }
 
 and ScoreEntered = {
+    BoardId: BoardId
     ScoreId: ScoreId
     Players: PlayerId * PlayerId 
     Score: Score
@@ -43,6 +45,7 @@ and ScoreEntered = {
 }
 
 and ScoreWithdrawn = {
+    BoardId: BoardId
     ScoreId: ScoreId
     Date: System.DateTimeOffset
 }

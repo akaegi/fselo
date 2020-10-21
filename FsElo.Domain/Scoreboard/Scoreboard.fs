@@ -28,9 +28,9 @@ and RegisterPlayer = {
 }
 
 and EnterScore = {
-    Players: PlayerName * PlayerName
+    Players: string * string
     Score: string
-    Date: DateTimeOffset
+    Date: DateTimeOffset option
 }
 
 and FixScore = {
@@ -106,43 +106,41 @@ let registerPlayer (args: RegisterPlayer) = function
         let (PlayerName name) as playerName = validatePlayerName args.Name
         if (PlayerRegistry.playerExists playerName state.PlayerRegistry)
             then playerAlreadyRegistered (sprintf "Player %s already registered on board" name)
-            else [PlayerRegistered { Id = createPlayerId (); Name = playerName; Date = DateTimeOffset.Now;  }]
+            else [PlayerRegistered { BoardId = state.BoardId; PlayerId = createPlayerId ()
+                                     Name = playerName; Date = DateTimeOffset.Now;  }]
     | _ -> boardNotOpen "Player can only be registered when board is open"
 
 let enterScore (args: EnterScore) = function
-    | Opened s ->
-        let lookupOrThrow n =
-            match PlayerRegistry.lookup n s.PlayerRegistry with
+    | Opened state ->
+        let lookupOrThrow name =
+            match PlayerRegistry.lookup name state.PlayerRegistry with
             | Some id -> id
             | None ->
-                let (PlayerName pn) = n
-                playerNotRegistered (sprintf "Player %s is not registered" pn)
+                playerNotRegistered (sprintf "Player %s is not registered" name)
         let (n1, n2) = args.Players
         let players = (lookupOrThrow n1, lookupOrThrow n2)
-        let score = validateScore args.Date  players args.Score s.BoardType s.ScoreList 
-        [ScoreEntered {
-            ScoreId = createScoreId ()
-            Score = score
-            Players = players
-            Date = args.Date
-        }]
+        let date = args.Date |> Option.defaultValue DateTimeOffset.Now
+        let score = validateScore date  players args.Score state.BoardType state.ScoreList 
+        [ScoreEntered { BoardId = state.BoardId; ScoreId = createScoreId ()
+                        Score = score; Players = players; Date = date }]
     | _ -> boardNotOpen "Score can only be entered when board is open"
     
 let withdrawScore (id: ScoreId) = function
-    | Opened s ->
-        match ScoreList.tryFind id s.ScoreList with
+    | Opened state ->
+        match ScoreList.tryFind id state.ScoreList with
         | None -> []
-        | Some _ -> [ScoreWithdrawn { ScoreId = id; Date = DateTimeOffset.Now }]
+        | Some _ -> [ScoreWithdrawn { BoardId = state.BoardId; ScoreId = id; Date = DateTimeOffset.Now }]
     | _ -> boardNotOpen "Score can only be withdrawn when board is open"
     
 let fixScore (args: FixScore) = function
-    | Opened s ->
-        match ScoreList.tryFind args.ScoreId s.ScoreList with
+    | Opened state ->
+        match ScoreList.tryFind args.ScoreId state.ScoreList with
         | None -> scoreNotFound (sprintf "Score with id %s not found" (args.ScoreId.ToString()))
         | Some oldScore ->
-            let l' = ScoreList.remove args.ScoreId s.ScoreList
-            let newScore = validateScore args.Date  oldScore.Players args.Score s.BoardType l'
-            [ScoreFixed { ScoreId = args.ScoreId; Score = newScore; Players = oldScore.Players; Date = args.Date }]
+            let l' = ScoreList.remove args.ScoreId state.ScoreList
+            let newScore = validateScore args.Date  oldScore.Players args.Score state.BoardType l'
+            [ScoreFixed { BoardId = state.BoardId; ScoreId = args.ScoreId
+                          Score = newScore; Players = oldScore.Players; Date = args.Date }]
     | _ -> boardNotOpen "Score can only be fixed when board is open"
     
 let handle (c: Command) =
@@ -172,7 +170,7 @@ type State with
         | PlayerRegistered p ->
             match s with
             | Opened s' -> 
-                let reg' = PlayerRegistry.update p.Name p.Id s'.PlayerRegistry
+                let reg' = PlayerRegistry.update p.Name p.PlayerId s'.PlayerRegistry
                 Opened { s' with PlayerRegistry = reg' }
             | _ -> invalidState ()
         | ScoreEntered e ->
