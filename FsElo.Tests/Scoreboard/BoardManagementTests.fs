@@ -10,25 +10,25 @@ open Xunit
 let ``board with null id cannot be opened`` () =
     given []
     |> ``when`` (OpenScoreboard { BoardId = null; Type = TableTennis })
-    |> thenThrows<ArgumentNullException>
+    |> thenThrowsAny<ScoreboardException>
     
 [<Fact>]
 let ``board with empty id cannot be opened`` () =
     given []
     |> ``when`` (OpenScoreboard { BoardId = ""; Type = TableTennis })
-    |> thenThrows<ArgumentException>
+    |> thenThrowsAny<ScoreboardException>
     
 [<Fact>]
 let ``board with too short id cannot be opened`` () =
     given []
     |> ``when`` (OpenScoreboard { BoardId = "ab"; Type = TableTennis })
-    |> thenThrows<ArgumentException>
+    |> thenThrowsAny<ScoreboardException>
     
 [<Fact>]
 let ``board with invalid id cannot be opened`` () =
     given []
     |> ``when`` (OpenScoreboard { BoardId = "ab*!"; Type = TableTennis })
-    |> thenThrows<ArgumentException>
+    |> thenThrowsAny<ScoreboardException>
     
 [<Fact>]
 let ``board with valid id can be opened`` () =

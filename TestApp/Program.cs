@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Eveneum;
 using FsElo.Domain.Scoreboard;
+using FsElo.Domain.Scoreboard.Events;
 using Microsoft.Azure.Cosmos;
 
 namespace TestApp
@@ -65,8 +66,8 @@ namespace TestApp
             await eventStore.Initialize();
 
 
-            var boardId = Events.BoardId.NewBoardId("season-2020");
-            Events.Event evt = Events.Event.NewScoreboardOpened(new Events.ScoreboardOpened(boardId, Events.ScoreType.TableTennis,
+            var boardId = BoardId.NewBoardId("season-2020");
+            Event evt = Event.NewScoreboardOpened(new ScoreboardOpened(boardId, ScoreType.TableTennis,
                 DateTimeOffset.Now));
             
             var streamId = Guid.NewGuid().ToString();

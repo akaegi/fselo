@@ -1,4 +1,4 @@
-﻿module FsElo.Domain.Scoreboard.Events
+﻿namespace FsElo.Domain.Scoreboard.Events
 
 type BoardId = BoardId of string
 
@@ -30,14 +30,12 @@ and ScoreboardClosed = {
 }
 
 and PlayerRegistered = {
-      BoardId: BoardId
       PlayerId: PlayerId
       Name: PlayerName
       Date: System.DateTimeOffset
 }
 
 and ScoreEntered = {
-    BoardId: BoardId
     ScoreId: ScoreId
     Players: PlayerId * PlayerId 
     Score: Score
@@ -45,7 +43,30 @@ and ScoreEntered = {
 }
 
 and ScoreWithdrawn = {
-    BoardId: BoardId
     ScoreId: ScoreId
     Date: System.DateTimeOffset
 }
+
+// exceptions
+type ScoreboardException(msg: string) =
+    inherit System.Exception(msg)
+type BoardNotOpenException(msg: string) =
+    inherit ScoreboardException(msg)
+    
+type BoardAlreadyOpenedException(msg: string) =
+    inherit ScoreboardException(msg)
+    
+type PlayerAlreadyRegisteredException(msg: string) =
+    inherit ScoreboardException(msg)
+    
+type PlayerNotRegisteredException(msg: string) =
+    inherit ScoreboardException(msg)
+
+type ScoreNotFoundException(msg: string) =
+    inherit ScoreboardException(msg)
+    
+type InvalidScoreException(msg: string) =
+    inherit ScoreboardException(msg)
+
+type InvalidPlayerNameException(msg: string) =
+    inherit ScoreboardException(msg)    

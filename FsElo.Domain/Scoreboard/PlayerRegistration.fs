@@ -5,9 +5,11 @@ open FsElo.Domain.Scoreboard.Events
 
 let createPlayerId (): PlayerId = System.Guid.NewGuid()
 
+let invalidPlayerName s = raise (InvalidPlayerNameException s)
+
 let validatePlayerName (pn: string): PlayerName =
     if isNull pn then nullArg "Argument must not be null"
-    elif pn.Length < 3 then invalidArg "playerName" "Player name must be at least 3 characters"
+    elif pn.Length < 3 then invalidPlayerName "Player name must be at least 3 characters"
     else (PlayerName pn)
 
 

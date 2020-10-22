@@ -16,19 +16,19 @@ let boardOpened = ScoreboardOpened {
 let ``cannot register player with null name`` () =
     given [boardOpened]
     |> ``when`` (RegisterPlayer { Name = null })
-    |> thenThrows<ArgumentNullException>
+    |> thenThrowsAny<ScoreboardException>
 
 [<Fact>]
 let ``cannot register player with empty name`` () =
     given [boardOpened]
     |> ``when`` (RegisterPlayer { Name = "" })
-    |> thenThrows<ArgumentException>
+    |> thenThrowsAny<ScoreboardException>
     
 [<Fact>]
 let ``cannot register player with a too short name`` () =
     given [boardOpened]
     |> ``when`` (RegisterPlayer { Name = "ab" })
-    |> thenThrows<ArgumentException>
+    |> thenThrowsAny<ScoreboardException>
 
 [<Fact>]
 let ``can register player with a valid name`` () =

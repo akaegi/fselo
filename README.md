@@ -22,7 +22,7 @@ register player playerName
 
 
 [given board]
-enter score boardId flags player1 player2 result date
+enter score player1 player2 result [date]
     requires board to be open
     requires player1 and player2 to be registered already
     [tt] requires (isTableTennisScore result)

@@ -35,7 +35,7 @@ let thenMatches (pred: (Event list -> bool)) (initialEvents, command) =
     |> Assert.True
 
 
-let thenThrows<'Ex when 'Ex :> System.Exception> (initialEvents, command) =
+let thenThrowsAny<'Ex when 'Ex :> System.Exception> (initialEvents, command) =
     // printGiven events
     // printWhen command
     // printExpectThrows typeof<'Ex>
@@ -44,4 +44,4 @@ let thenThrows<'Ex when 'Ex :> System.Exception> (initialEvents, command) =
         fold initialEvents
         |> handle command
         |> ignore)
-    |> Assert.Throws<'Ex>
+    |> Assert.ThrowsAny<'Ex>

@@ -15,22 +15,19 @@ let boardOpened = ScoreboardOpened {
     Date = DateTimeOffset.Now
 }
 
-let p1 = {
-    BoardId = boardId
+let p1: PlayerRegistered = {
     PlayerId = Guid.NewGuid()
     Name = PlayerName "Leo"
     Date = DateTimeOffset.Now
 }
 
-let p2 = {
-    BoardId = boardId
+let p2: PlayerRegistered = {
     PlayerId = Guid.NewGuid()
     Name = PlayerName "Mattias"
     Date = DateTimeOffset.Now
 }
 
-let p3 = {
-    BoardId = boardId
+let p3: PlayerRegistered = {
     PlayerId = Guid.NewGuid()
     Name = PlayerName "Kristoffer"
     Date = DateTimeOffset.Now
@@ -39,8 +36,8 @@ let p3 = {
 let anytime = DateTimeOffset.Now
 
 let mkScoreEntered (p1: PlayerRegistered) (p2: PlayerRegistered)
-                   (score: Score) (date: DateTimeOffset) =
-    { BoardId = boardId; ScoreId = Guid.NewGuid(); Players = (p1.PlayerId, p2.PlayerId); Date = date; Score = score }
+                   (score: Score) (date: DateTimeOffset): ScoreEntered =
+    { ScoreId = Guid.NewGuid(); Players = (p1.PlayerId, p2.PlayerId); Date = date; Score = score }
 
 
 [<Fact>]
@@ -49,7 +46,7 @@ let ``score cannot be entered if one of the players is *not yet* registered`` ()
     
     given [boardOpened; PlayerRegistered p1; PlayerRegistered p2]
     |> ``when`` (EnterScore { Players = (n1, "Mr. X"); Score = ""; Date = None })
-    |> thenThrows<PlayerNotRegisteredException>
+    |> thenThrowsAny<PlayerNotRegisteredException>
 
 [<Fact>]
 let ``invalid score cannot be entered`` () =
@@ -58,7 +55,7 @@ let ``invalid score cannot be entered`` () =
     
     given [boardOpened; PlayerRegistered p1; PlayerRegistered p2]
     |> ``when`` (EnterScore { Players = (n1, n2); Score = "2:1a"; Date = None})
-    |> thenThrows<InvalidScoreException>
+    |> thenThrowsAny<InvalidScoreException>
     
 [<Fact>]
 let ``score of two registered players can be entered`` () =
@@ -82,7 +79,7 @@ let ``score is rejected if there is another score of the same players within the
     
     given [boardOpened; PlayerRegistered p1; PlayerRegistered p2; ScoreEntered score1]
     |> ``when`` (EnterScore { Players = (n1, n2); Date = Some (date1.Add(halfHour)); Score = "1:2" })
-    |> thenThrows<ScoreEntryException>
+    |> thenThrowsAny<ScoreboardException>
 
 [<Fact>]
 let ``score is entered if there is another score of *different* players within the last hour`` () =

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <LangVersion>8</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Eveneum" Version="4.6.0" />
+      <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.14.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\FsElo.Domain\FsElo.Domain.fsproj" />
+    </ItemGroup>
+
+
+</Project>

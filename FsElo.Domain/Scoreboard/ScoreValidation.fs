@@ -7,14 +7,7 @@ open FsElo.Domain.Scoreboard.ScoreList
 
 let createScoreId (): ScoreId = Guid.NewGuid()
 
-   
-    
-// ----- Parsing -----
-
-exception InvalidScoreException of string
 let invalidScore s = raise (InvalidScoreException s)
-
-exception ScoreEntryException of string
 
 let private parseScoreWithColon (s: string): Score =
     let m = Regex.Match(s, "^([0-9]):([0-9])$")
@@ -47,7 +40,7 @@ let private requireNoExistingScoreInRange (players: PlayerId * PlayerId)
         |> List.filter (fun e -> e.Players = players)
 
     if entries.Length > 0 then
-        raise (ScoreEntryException "Possible duplicate score")
+        invalidScore "Possible duplicate score"
         
     
 let validateScore (date: DateTimeOffset)

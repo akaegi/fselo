@@ -40,24 +40,13 @@ and FixScore = {
 }
 
 
-// ----- Exceptions -----
-
-exception BoardNotOpenException of string
-let boardNotOpen s = raise (BoardNotOpenException s)
-
-exception BoardAlreadyOpenedException of string
+// ----- Exceptions -----    
+let boardNotOpen s = raise (BoardNotOpenException s)  
 let boardAlreadyOpened s = raise (BoardAlreadyOpenedException s) 
-
-exception PlayerAlreadyRegisteredException of string
 let playerAlreadyRegistered s = raise (PlayerAlreadyRegisteredException s)
-
-exception PlayerNotRegisteredException of string
 let playerNotRegistered s = raise (PlayerNotRegisteredException s)
-
-exception ScoreNotFoundException of string
 let scoreNotFound s = raise (ScoreNotFoundException s)
 
-exception ScoreEntryNotAllowed 
 
 // ----- Scoreboard Validation -----
 
@@ -65,7 +54,7 @@ let validateBoardId(s: string) =
     let m = Regex.Match(s, "[0-9a-zA-Z][0-9a-zA-Z-_]{2,}")
     if m.Success
         then (BoardId m.Value)
-        else invalidArg "boardName" (sprintf "%s is not a valid board name" s)
+        else raise (ScoreboardException (sprintf "%s is not a valid board name" s))
 
 // ----- State ----
 type State = 
@@ -106,8 +95,7 @@ let registerPlayer (args: RegisterPlayer) = function
         let (PlayerName name) as playerName = validatePlayerName args.Name
         if (PlayerRegistry.playerExists playerName state.PlayerRegistry)
             then playerAlreadyRegistered (sprintf "Player %s already registered on board" name)
-            else [PlayerRegistered { BoardId = state.BoardId; PlayerId = createPlayerId ()
-                                     Name = playerName; Date = DateTimeOffset.Now;  }]
+            else [PlayerRegistered { PlayerId = createPlayerId (); Name = playerName; Date = DateTimeOffset.Now;  }]
     | _ -> boardNotOpen "Player can only be registered when board is open"
 
 let enterScore (args: EnterScore) = function
@@ -121,15 +109,14 @@ let enterScore (args: EnterScore) = function
         let players = (lookupOrThrow n1, lookupOrThrow n2)
         let date = args.Date |> Option.defaultValue DateTimeOffset.Now
         let score = validateScore date  players args.Score state.BoardType state.ScoreList 
-        [ScoreEntered { BoardId = state.BoardId; ScoreId = createScoreId ()
-                        Score = score; Players = players; Date = date }]
+        [ScoreEntered { ScoreId = createScoreId (); Score = score; Players = players; Date = date }]
     | _ -> boardNotOpen "Score can only be entered when board is open"
     
 let withdrawScore (id: ScoreId) = function
     | Opened state ->
         match ScoreList.tryFind id state.ScoreList with
         | None -> []
-        | Some _ -> [ScoreWithdrawn { BoardId = state.BoardId; ScoreId = id; Date = DateTimeOffset.Now }]
+        | Some _ -> [ScoreWithdrawn { ScoreId = id; Date = DateTimeOffset.Now }]
     | _ -> boardNotOpen "Score can only be withdrawn when board is open"
     
 let fixScore (args: FixScore) = function
@@ -139,8 +126,7 @@ let fixScore (args: FixScore) = function
         | Some oldScore ->
             let l' = ScoreList.remove args.ScoreId state.ScoreList
             let newScore = validateScore args.Date  oldScore.Players args.Score state.BoardType l'
-            [ScoreFixed { BoardId = state.BoardId; ScoreId = args.ScoreId
-                          Score = newScore; Players = oldScore.Players; Date = args.Date }]
+            [ScoreFixed { ScoreId = args.ScoreId; Score = newScore; Players = oldScore.Players; Date = args.Date }]
     | _ -> boardNotOpen "Score can only be fixed when board is open"
     
 let handle (c: Command) =

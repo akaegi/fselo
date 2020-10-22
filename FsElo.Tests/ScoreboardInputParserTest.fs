@@ -39,15 +39,7 @@ let ``open scoreboard with missing board id`` () =
     
 [<Fact>]
 let ``register player `` () =
-    input "register player b1 p1"
-    |> parsesTo (fun cmd ->
-        match cmd with
-        | RegisterPlayer r -> r.Name = "p1"
-        | _ -> false)
-
-[<Fact>]
-let ``register player with board flag`` () =
-    input "register player p1 --board b1"
+    input "register player p1"
     |> parsesTo (fun cmd ->
         match cmd with
         | RegisterPlayer r -> r.Name = "p1"
