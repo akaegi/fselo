@@ -55,10 +55,4 @@ namespace FsElo.WebApp.Controllers
             UtcOffset = TimeSpan.FromHours(2),
         };
     }
-
-    public class ModifyBoardArgs
-    {
-        [Required]
-        public string Command { get; set; }
-    }
 }

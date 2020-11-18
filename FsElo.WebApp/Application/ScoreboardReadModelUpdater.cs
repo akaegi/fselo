@@ -14,14 +14,12 @@ namespace FsElo.WebApp.Application
     public class ScoreboardReadModelUpdater
     {
         private readonly EveneumDocumentSerializer _serializer;
-        private readonly ScoreboardEntryRepository _score;
-        private readonly PlayerRepository _players;
+        private readonly ScoreboardReadModelDataAccess _dataAccess;
 
-        public ScoreboardReadModelUpdater(EveneumDocumentSerializer serializer, ScoreboardEntryRepository score,
-            PlayerRepository players)
+        public ScoreboardReadModelUpdater(EveneumDocumentSerializer serializer, 
+            ScoreboardReadModelDataAccess dataAccess)
         {
-            _players = players;
-            _score = score;
+            _dataAccess = dataAccess;
             _serializer = serializer;
         }
         
@@ -58,20 +56,21 @@ namespace FsElo.WebApp.Application
 
         private async Task RemoveScoreAsync(string streamId, ScoreWithdrawn e)
         {
-            await _score.RemoveScoreAsync(ToBoardId(streamId), e.ScoreId);
+            await _dataAccess.RemoveScoreEntryAsync(ToBoardId(streamId), e.ScoreId);
         }
 
         private async Task UpdateScoreAsync(string streamId, ScoreEntered e)
         {
-            await _score.UpdateScoreEntryAsync(ToBoardId(streamId), e);
+            await _dataAccess.UpdateScoreEntryAsync(ToBoardId(streamId), e);
         }
 
-        private string ToBoardId(string streamId) => streamId;
 
         private async Task UpdatePlayerNameAsync(string streamId, PlayerRegistered e)
         {
-            await _players.UpdatePlayerAsync(ToBoardId(streamId), e.PlayerId, e.Name.Item);
+            await _dataAccess.UpdatePlayerAsync(ToBoardId(streamId), e.PlayerId, e.Name.Item);
         }
+        
+        private string ToBoardId(string streamId) => streamId;
 
         private Event DeserializeEvent(EveneumDocument d)
         {

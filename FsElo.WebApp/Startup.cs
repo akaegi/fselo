@@ -30,9 +30,13 @@ namespace FsElo.WebApp
             services.ProvideCosmosClient();
             services.ProvideEveneum();
             services.AddTransient<ScoreboardCommandHandler>();
-            services.AddTransient<ScoreboardEntryRepository>();
-            services.AddTransient<PlayerRepository>();
             services.AddTransient<ScoreboardReadModelUpdater>();
+            services.AddTransient<ScoreboardReadModelDataAccess>();
+            services.AddMemoryCache(options =>
+            {
+                // size limit = number of UTF-8 chars = 1 MB.
+                options.SizeLimit = 1 * 1024 * 1024;
+            });
             
             services.AddControllers();
         }

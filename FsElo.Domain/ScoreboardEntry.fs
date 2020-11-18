@@ -3,7 +3,7 @@
 open System
 open Newtonsoft.Json
 
-type ScoreboardEntry = {
+type ScoreboardEntryOthersw = {
     
     // Cosmos DB entries must have an id field!
     [<JsonProperty("id")>]

@@ -62,16 +62,5 @@ namespace FsElo.WebApp
             Console.WriteLine("Product Backup started");
             return changeFeedProcessor;
         }
-
-        private static Task HandleChangesAsync(IReadOnlyCollection<EveneumDocument> changes, CancellationToken cancellationtoken)
-        {
-            foreach (var change in changes)
-            {
-                Console.WriteLine(change);
-            }
-            throw new Exception();
-
-            return Task.CompletedTask;
-        }
     }
 }
