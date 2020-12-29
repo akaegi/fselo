@@ -38,9 +38,17 @@ let ``open scoreboard with missing board id`` () =
     |> failsToParse
     
 [<Fact>]
-let ``register player `` () =
+let ``register player`` () =
     input "register player p1"
     |> parsesTo (fun cmd ->
         match cmd with
         | RegisterPlayer r -> r.Name = "p1"
+        | _ -> false)
+
+[<Fact>]
+let ``enter score`` () =
+    input "enter score alpha beta 1:2"
+    |> parsesTo (fun cmd ->
+        match cmd with
+        | EnterScore e -> e.Score = "1:2" && e.Players = ("alpha", "beta")
         | _ -> false)

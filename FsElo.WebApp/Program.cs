@@ -57,9 +57,9 @@ namespace FsElo.WebApp
                 .Build();
             
 
-            Console.WriteLine("Starting Change Feed Processor for Product Backups...");
+            Console.WriteLine("Starting Change Feed Processor for Scoreboard Read Model...");
             await changeFeedProcessor.StartAsync();
-            Console.WriteLine("Product Backup started");
+            Console.WriteLine("Change Feed Processor started");
             return changeFeedProcessor;
         }
     }

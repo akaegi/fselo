@@ -32,12 +32,10 @@ namespace FsElo.WebApp
             services.AddTransient<ScoreboardCommandHandler>();
             services.AddTransient<ScoreboardReadModelUpdater>();
             services.AddTransient<ScoreboardReadModelDataAccess>();
-            services.AddMemoryCache(options =>
-            {
-                // size limit = number of UTF-8 chars = 1 MB.
-                options.SizeLimit = 1 * 1024 * 1024;
-            });
             
+            // Size limit: 1 MB
+            const int scoreboardCacheSize = 1 * 1024 * 1024;
+            services.AddSingleton(new ScoreboardMemoryCache(scoreboardCacheSize));
             services.AddControllers();
         }
 

@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using FsElo.Domain.Scoreboard.Events;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 
@@ -14,9 +17,9 @@ namespace FsElo.WebApp.Application
         private readonly CosmosClient _cosmosClient;
         private readonly IMemoryCache _cache;
 
-        public ScoreboardReadModelDataAccess(CosmosClient cosmosClient, IMemoryCache cache)
+        public ScoreboardReadModelDataAccess(CosmosClient cosmosClient, ScoreboardMemoryCache cache)
         {
-            _cache = cache;
+            _cache = cache.Cache;
             _cosmosClient = cosmosClient;
         }
 
@@ -41,11 +44,36 @@ namespace FsElo.WebApp.Application
             await scoreboard.UpsertItemAsync(entry, new PartitionKey(boardId));
         }
 
-        private Task<string> GetPlayerNameAsync(string playerId, string boardId)
+        public async Task UpdatePlayerAsync(string boardId, Guid playerId, string playerName)
         {
-            return _cache.GetOrCreateAsync(playerId, e => CreatePlayerNameCacheEntry(e, playerId, boardId));
+            // for now, we don't have to update previous scoreboard entries... 
+            // (Player names currently cannot be changed)
+            var scoreboard = await PrepareScoreboardContainerAsync();
+            var player = new PlayerEntry {Id = ToId(playerId), BoardId = boardId, Name = playerName};
+            await scoreboard.UpsertItemAsync(player, new PartitionKey(boardId));
+
+            UpdateCache(player);
         }
 
+        public async Task RemoveScoreEntryAsync(string boardId, Guid scoreId)
+        {
+            var scoreboard = await PrepareScoreboardContainerAsync();
+            await scoreboard.DeleteItemAsync<ScoreEntry>(ToId(scoreId), new PartitionKey(boardId));
+        }
+
+        private Task<string> GetPlayerNameAsync(string playerId, string boardId)
+        {
+            return _cache.GetOrCreateAsync($"id-{playerId}", e => CreatePlayerNameCacheEntry(e, playerId, boardId));
+        }
+        
+        private void UpdateCache(PlayerEntry entry)
+        {
+            // put the player name into the in-mem cache
+            _cache.CreateEntry($"id-{entry.Id}")
+                .SetSize(entry.Name.Length)
+                .SetValue(entry.Name);
+        }
+        
         private async Task<string> CreatePlayerNameCacheEntry(ICacheEntry entry, string playerId, string boardId)
         {
             var scoreboard = await PrepareScoreboardContainerAsync();
@@ -57,26 +85,6 @@ namespace FsElo.WebApp.Application
             return playerEntry.Name;
         }
 
-        public async Task UpdatePlayerAsync(string boardId, Guid playerId, string playerName)
-        {
-            // for now, we don't have to update previous scoreboard entries... 
-            // (Player names currently cannot be changed)
-            var scoreboard = await PrepareScoreboardContainerAsync();
-            var player = new PlayerEntry {Id = ToId(playerId), BoardId = boardId, Name = playerName};
-            await scoreboard.UpsertItemAsync(player, new PartitionKey(boardId));
-
-            // put the player name into the in-mem cache
-            _cache.CreateEntry(playerId)
-                .SetSize(playerName.Length)
-                .SetValue(playerName);
-        }
-        
-        public async Task RemoveScoreEntryAsync(string boardId, Guid scoreId)
-        {
-            var scoreboard = await PrepareScoreboardContainerAsync();
-            await scoreboard.DeleteItemAsync<ScoreEntry>(ToId(scoreId), new PartitionKey(boardId));
-        }
-
         private async Task<Container> PrepareScoreboardContainerAsync()
         {
             var db = _cosmosClient.GetDatabase("FsElo");
@@ -86,9 +94,64 @@ namespace FsElo.WebApp.Application
         }
 
         private string ToId(Guid scoreId) => scoreId.ToString();
+
+        public async IAsyncEnumerable<QueryScoreEntryResultItem> QueryScoreEntriesAsync(QueryScoreEntriesFilter f)
+        {
+            if (String.IsNullOrEmpty(f.BoardId))
+                throw new ArgumentOutOfRangeException(nameof(f.BoardId));
+            
+            if (string.IsNullOrEmpty(f.Player1))
+                throw new ArgumentOutOfRangeException(nameof(f.Player1));
+
+            var scoreboard = await PrepareScoreboardContainerAsync();
+
+            var q = scoreboard.GetItemLinqQueryable<ScoreEntry>()
+                .Where(e => e.BoardId == f.BoardId && e.Player1.Name == f.Player1);
+
+            if (f.Player2 != null)
+            {
+                q = q.Where(e => e.Player2.Name == f.Player2);
+            }
+
+            q = q.OrderByDescending(e => e.Date);
+
+            var iter = q.ToFeedIterator();
+            
+            // "transform" feed iterator to AsyncEnumerable
+            while (iter.HasMoreResults)
+            {
+                foreach (var item in await iter.ReadNextAsync())
+                {
+                    yield return new QueryScoreEntryResultItem
+                    {
+                        Player1 = item.Player1.Name,
+                        Player2 = item.Player2.Name,
+                        Score = item.Score,
+                        Date = item.Date,
+                    };
+                }
+            }
+        }
     }
-    
-    
+
+    public class QueryScoreEntriesFilter
+    {
+        public string BoardId { get; set; }
+        public string Player1 { get; set; }
+        public string Player2 { get; set; }
+    }
+
+    public class QueryScoreEntryResultItem
+    {
+        public string Player1 { get; set; }
+        
+        public string Player2 { get; set; }
+        
+        public string Score { get; set; }
+        
+        public DateTimeOffset Date { get; set; }
+    }
+
     public class ScoreEntry
     {
         [JsonProperty("id")]
