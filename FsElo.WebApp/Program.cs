@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Eveneum.Documents;
 using FsElo.WebApp.Application;
@@ -16,12 +14,11 @@ namespace FsElo.WebApp
         public static async Task Main(string[] args)
         {
             IHost host = CreateHostBuilder(args).Build();
-
             await host.Services.GetService<EveneumInitializer>().DoAsync();
             
-            var cosmosClient = host.Services.GetService<CosmosClient>();
-            var updater = host.Services.GetService<ScoreboardReadModelUpdater>();
-            ChangeFeedProcessor proc = await StartReadModelUpdaterChangeFeedProcessorAsync(cosmosClient, updater);
+            // var cosmosClient = host.Services.GetService<CosmosClient>();
+            // var updater = host.Services.GetService<ScoreboardReadModelUpdater>();
+            // ChangeFeedProcessor proc = await StartReadModelUpdaterChangeFeedProcessorAsync(cosmosClient, updater);
 
             try
             {
@@ -33,7 +30,7 @@ namespace FsElo.WebApp
             }
             finally
             {
-                await proc.StopAsync();
+                // await proc.StopAsync();
             }
         }
 
@@ -41,8 +38,12 @@ namespace FsElo.WebApp
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
         
+        /// <remarks>Kept for doc purpose only</remarks>
+        // ReSharper disable once UnusedMember.Local
         private static async Task<ChangeFeedProcessor> StartReadModelUpdaterChangeFeedProcessorAsync(
+#pragma warning disable 612
             CosmosClient cosmosClient, ScoreboardReadModelUpdater updater)
+#pragma warning restore 612
         {
             var db = cosmosClient.GetDatabase("FsElo");
             await db.CreateContainerIfNotExistsAsync("ReadModelUpdater", "/id");

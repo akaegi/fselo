@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,18 +9,14 @@ using FsElo.Domain.Scoreboard.Events;
 
 namespace FsElo.WebApp.Application
 {
-    // Scores:  | BoardId | ScoreId | Player 1 | Score 1 | Player 2 | Score 2 | Date |
-    // Players: | BoardId | Player id | Player name
-
+    /// <remarks>Kept for doc purposes only</remarks>
+    [Obsolete]
     public class ScoreboardReadModelUpdater
     {
         private readonly EveneumDocumentSerializer _serializer;
-        private readonly ScoreboardReadModelDataAccess _dataAccess;
 
-        public ScoreboardReadModelUpdater(EveneumDocumentSerializer serializer, 
-            ScoreboardReadModelDataAccess dataAccess)
+        public ScoreboardReadModelUpdater(EveneumDocumentSerializer serializer)
         {
-            _dataAccess = dataAccess;
             _serializer = serializer;
         }
         
@@ -35,41 +32,12 @@ namespace FsElo.WebApp.Application
             }
         }
 
-        private async Task UpdateReadModelAsync(string streamId, Event @event)
+        private Task UpdateReadModelAsync(string streamId, Event @event)
         {
-            switch (@event)
-            {
-                case Event.PlayerRegistered p:
-                    await UpdatePlayerNameAsync(streamId, p.Item);
-                    break;
-                case Event.ScoreEntered e:
-                    await UpdateScoreAsync(streamId, e.Item);
-                    break;
-                case Event.ScoreFixed f:
-                    await UpdateScoreAsync(streamId, f.Item);
-                    break;
-                case Event.ScoreWithdrawn w:
-                    await RemoveScoreAsync(streamId, w.Item);
-                    break;
-            }
+            string boardId = ToBoardId(streamId);
+            return Task.CompletedTask;
         }
 
-        private async Task RemoveScoreAsync(string streamId, ScoreWithdrawn e)
-        {
-            await _dataAccess.RemoveScoreEntryAsync(ToBoardId(streamId), e.ScoreId);
-        }
-
-        private async Task UpdateScoreAsync(string streamId, ScoreEntered e)
-        {
-            await _dataAccess.UpdateScoreEntryAsync(ToBoardId(streamId), e);
-        }
-
-
-        private async Task UpdatePlayerNameAsync(string streamId, PlayerRegistered e)
-        {
-            await _dataAccess.UpdatePlayerAsync(ToBoardId(streamId), e.PlayerId, e.Name.Item);
-        }
-        
         private string ToBoardId(string streamId) => streamId;
 
         private Event DeserializeEvent(EveneumDocument d)

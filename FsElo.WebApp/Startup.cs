@@ -30,8 +30,7 @@ namespace FsElo.WebApp
             services.ProvideCosmosClient();
             services.ProvideEveneum();
             services.AddTransient<ScoreboardCommandHandler>();
-            services.AddTransient<ScoreboardReadModelUpdater>();
-            services.AddTransient<ScoreboardReadModelDataAccess>();
+            services.AddTransient<ScoreboardReadModelProvider>();
             
             // Size limit: 1 MB
             const int scoreboardCacheSize = 1 * 1024 * 1024;

@@ -30,7 +30,7 @@ namespace FsElo.WebApp.Application
                 boardId = o.Item.BoardId;
             }
 
-            string streamId = boardId;
+            string streamId = ToStreamId(boardId);
             var (version, events) = await ReadEventsAsync(streamId);
             var state = Evolve(events);
             var newEvents = Scoreboard.handle(command).Invoke(state);
@@ -39,6 +39,8 @@ namespace FsElo.WebApp.Application
             string message = BuildResultMessage(newEvents);
             return new ScoreboardCommandHandlerResult(streamId, message);
         }
+
+        public static string ToStreamId(string boardId) => boardId;
 
         private string BuildResultMessage(IEnumerable<Event> events)
         {

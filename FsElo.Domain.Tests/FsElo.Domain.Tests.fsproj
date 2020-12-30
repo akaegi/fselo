@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>FsElo.Tests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\FsElo.Domain\FsElo.Domain.fsproj">
